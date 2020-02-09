@@ -31,14 +31,17 @@ Once the YAMD file is updated, the dataset generated from it would faithfully re
 ## Syntax
 
 YAMD syntax is designed to strike a balance between readability and functionality, and
-is modeled after [CommonMark](https://commonmark.org/help/).
-YAMD files, if written in accordance to Markdown conventions (which in not necessarily),
+is modeled after Markdown.
+YAMD files, if written in accordance to Markdown conventions (not necessarily but highly recommended),
 can be processed as a Markdown file by any file converter.
+
+To illustrate the syntax, I'll collect information of the the three ethnic groups in Belgium as an exmaple.
 
 ### assigning strings
 
 Variables are assigned in the form of `- <key>: <value>`
 
+Say I'm collecting information of the group
 Example:
 ```markdown
 - variable 1: value 1
@@ -54,21 +57,21 @@ produces:
 }
 ```
 There is no need to quote strings.
-YAMD is forgiving about spaces and line breaks, but you probably want to 
-stick to Markdown conventions regarding indentation.
+
+YAMD is forgiving about leading and trailing spaces, but you probably want to stick to Markdown conventions regarding indentation.
 
 Example:
 ```markdown
 - variable 1:value 1
- - variable 2: 2
-     -       variable   3   :   3.14
+ - variable 2: value 2
+     -       variable   3   :   value  3
 ```
 also produces:
 ```json
 {
   "variable 1": "value 1", 
   "variable 2": "value 2",
-  "variable 3": "value 3"
+  "variable   3": "value  3"
 }
 ```
 
@@ -109,31 +112,45 @@ produces:
 ```
 Complex numbers are stored as strings
 
-### assingning lists
+### assigning lists
 
-There are three ways to store lists: horizontal list, vertical list and List of Entries (LOE)
+There are three methods to store lists: horizontal list, vertical list and List of Entries (LOE).
+They all achieve the same goal, but based on the type of element your list contain, one might be more 
+visually appealing then others.
 
 #### horizontal list
+
+Items of a horizontal list is assigned in the form of
+`- <key>: [ <item>, <item>, ... , <item> ]`
 
 Example:
 ```markdown
 - list 1: [1, 2, 3.14159]
-- list 2: ["text 1", 'text 2', 3]
-- not list: [text 1, text 2, 3]
+- list 2: ["text 1", 'text 2', "text 3"]
+- not a list: [text a, text b, text c]
 
 ```
 generates:
 ```
 {
   "list 1": [1, 2, 3.14159], 
-  "list 2": ["text 1", "text 2", 3]
-  "not list": "[text 1, text 2, 3]"  
+  "list 2": ["text 1", "text 2", "text 3"]
+  "not a list": "[text a, text b, text c]"  
 }
 ```
 Note that strings requires either single or double quotes, or else the entire list would be stored
 as one string.
 
 #### vertical list
+
+Items of a vertical list is assigned in the form of:
+```
+- <key>:
+  * <item>
+  * <item>
+  ...
+  * <item>
+```
 
 Example
 ```markdown
@@ -144,16 +161,58 @@ Example
 - list 2:
   * text 1
   * text 2
-  * 3
+  * text 3
 - still a list:
-* text 1
-* text 2
-* 3 
+* text a
+* text b
+* text c
 ```
+generates
+```json
+{
+  "list 1": [1, 2, 3.14159], 
+  "list 2": ["text 1", "text 2", "text 3"], 
+  "still a list": ["text a", "text b", "text c"]
+}
+```
+There is no need to quote strings in vertical lists.
+Also, although YAMD ignored leading spaces, it is recommended to stick to the Markdown conventions and indent each item.
 
 #### List of Entries
 
-This is the highligh of YAMD. 
+Example:
+```markdown
+# entry
+- variable 1: a
+- variable 2: A
+
+# entry
+- variable 1: b
+- variable 2: B
+
+# entry
+- variable 1: c
+- variable 2: C
+```
+generates
+```json
+{
+  "entry": [
+    {
+      "variable 1": "a", 
+      "variable 2": "A"
+    }, 
+    {
+      "variable 1": "b", 
+      "variable 2": "B"
+    }, 
+    {
+      "variable 1": "c", 
+      "variable 2": "C"
+    }
+  ]
+}
+```
 
 
 ### Tool
