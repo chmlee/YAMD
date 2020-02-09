@@ -23,6 +23,11 @@ Instead of (1) checking the documentation, and then (2) making sure the spreadsh
 reflects the decisions of the documentation, researchers now only have to do the former.
 Once the YAMD file is updated, the dataset generated from it would faithfully reflect the updates.
 
+## Feature
+- Syntax compatible with Markdown, and can be processed as such
+- Support nested data structure
+- List of Entries
+
 ## Syntax
 
 YAMD syntax is designed to strike a balance between readability and functionality, and
@@ -32,10 +37,12 @@ can be processed as a Markdown file by any file converter.
 
 ### assigning strings
 
+Variables are assigned in the form of `- <key>: <value>`
+
 Example:
 ```markdown
 - variable 1: value 1
-* variable 2: value 2
+- variable 2: value 2
 - variable 3: value 3
 ```
 produces:
@@ -53,7 +60,7 @@ stick to Markdown conventions regarding indentation.
 Example:
 ```markdown
 - variable 1:value 1
- * variable 2: 2
+ - variable 2: 2
      -       variable   3   :   3.14
 ```
 also produces:
@@ -104,31 +111,50 @@ Complex numbers are stored as strings
 
 ### assingning lists
 
-There are three ways to store lists: horizontal list, vertical list and LOE (List Of Entries)
+There are three ways to store lists: horizontal list, vertical list and List of Entries (LOE)
 
 #### horizontal list
 
-Horizontal lists wraps all items with square brackets, and separated each by commas: `[ item, item, item, ... , item]`. It must be placed at the same line, hence the name horizontal list
-
 Example:
 ```markdown
-- variable 1: value 1
-- variable 2: [0, 1, 2, 3.14159]
-- variable 3: ["text 1", 'text 2', 3]
-- variable 4: [text 1, text 2, 3]
+- list 1: [1, 2, 3.14159]
+- list 2: ["text 1", 'text 2', 3]
+- not list: [text 1, text 2, 3]
 
 ```
 generates:
 ```
 {
-  "variable 1": "value 1", 
-  "variable 2": [0, 1, 2, 3.14159], 
-  "variable 3": ["text 1", "text 2", 1]
-  "variable 4": "[text 1, text 2, 3]"  
+  "list 1": [1, 2, 3.14159], 
+  "list 2": ["text 1", "text 2", 3]
+  "not list": "[text 1, text 2, 3]"  
 }
 ```
 Note that strings requires either single or double quotes, or else the entire list would be stored
 as one string.
+
+#### vertical list
+
+Example
+```markdown
+- list 1:
+  * 1
+  * 2
+  * 3.14159
+- list 2:
+  * text 1
+  * text 2
+  * 3
+- still a list:
+* text 1
+* text 2
+* 3 
+```
+
+#### List of Entries
+
+This is the highligh of YAMD. 
+
 
 ### Tool
 
