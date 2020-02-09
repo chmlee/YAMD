@@ -8,25 +8,25 @@
 
 YAMD is a data serialization standard with Markdown-*like* syntax.
 
-Proper documentation for primary data collection can be hard, especially if it
-involves qualatative sources.
-Unless working on a project with specialized tools available, researchers
-may start with two programs: a spreadsheet application (like Excel) 
+Accurate documentation for primary data collection can be hard, especially if it
+involves qualitative sources.
+Unless working on a project with specialized programs available, researchers
+usually start with two basic programs: a spreadsheet application (like Excel) 
 and a word processor (like Word).
 They consult some sources, decide to add new things to the dataset,
 made changes to the spreadsheet, document said changes in the word file, and so on.
 
-With YAMD, researchers can focus on the documentation exculsively during the data collection
+With YAMD, researchers can focus on the documentation exclusively during the data collection
 stage, and let [available tools](#tool) generates the dataset afterwards.
 This also make checking and updating dataset a lot easier.
-Instead of (1) checking the documentation, and then (2) making sure the spreadsheet correctly
-reflects the decisions of the documentation, researchers now only have to do the former.
-Once the YAMD file is updated, the dataset generated from it would faithfully reflect the updates.
+Instead of (1) checking/updating the documentation, and then (2) making sure the spreadsheet correctly
+reflects the decisions of the documentation, researchers now only have to do the former,
+Once the YAMD file is updated, the dataset generated from it would faithfully reflect the changes.
 
 ## Feature
 - Syntax compatible with Markdown, and can be processed as such
 - Support nested data structure
-- List of Entries (LOE) - see below
+- [List of Entries (LOE)](#list-of-entries-loe)
 
 ## Syntax
 
@@ -72,7 +72,7 @@ produces:
 }
 ```
 
-If no value is assigned to a variable, a default string "NA" would be assinged.
+If no value is assigned to a variable, a default string "NA" would be assigned.
 
 Example:
 ```markdown
@@ -98,7 +98,7 @@ Example:
 - variable 3: 3.14159
 - variable 4: 4-2i
 ```
-produces:
+generates
 ```json
 {
   "variable 1": 1, 
@@ -126,7 +126,7 @@ Example:
 - not a list: [text a, text b, text c]
 
 ```
-generates:
+generates
 ```
 {
   "list 1": [1, 2, 3.14159], 
@@ -202,10 +202,10 @@ generates
 }
 ```
 
-For dictionaries to be stored in the same list, they need to have the same entry name.
+For dictionaries to be stored in the same list, they need to have the same LOE names.
 However, the keys of the dictionaries need not be identical.
 
-LOE can also added nested:
+LOE can also be nested:
 
 ```markdown
 # entry
@@ -259,9 +259,8 @@ generates
 }
 ```
 The number of leading `#` of the list name determine how it is nested.
-Again, the leading spaces before the name doesn't matter.
-The nesting rule is simple: the lines follwing the name are together *one* element of the list,
-until the the line with list name starting with more or same numbers of `#`
+The nesting rule is simple: the lines following the name are together *one* element of the list,
+until the line with LOW with the same or more numbers of `#`
 YAMD supports up to 7 level of LOE.
 
 ```markdown
@@ -335,3 +334,10 @@ generates
 ## Tool
 
 - [pyamd](https://github.com/chmlee/pyamd): YAMD parser and dumper for Python (under active production)
+
+Future plans (no guarantee):
+- yamdit: a fork of [StackEdit](https://stackedit.io/) modified for editing YAMD files.
+- pymad port to R
+
+
+
