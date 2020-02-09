@@ -4,7 +4,7 @@
 
 > **Y**AMD **a**in't **M**ark**d**own
 
-### Introduction
+## Introduction
 
 YAMD is a data serialization standard with Markdown-*like* syntax.
 
@@ -23,32 +23,30 @@ Instead of (1) checking the documentation, and then (2) making sure the spreadsh
 reflects the decisions of the documentation, researchers now only have to do the former.
 Once the YAMD file is updated, the dataset generated from it would faithfully reflect the updates.
 
-### Syntax
+## Syntax
 
 YAMD syntax is designed to strike a balance between readability and functionality, and
 is modeled after [CommonMark](https://commonmark.org/help/).
 YAMD files, if written in accordance to Markdown conventions (which in not necessarily),
 can be processed as a Markdown file by any file converter.
 
-#### assigning variables
+### assigning strings
 
 Example:
 ```markdown
 - variable 1: value 1
-* variable 2: 2
-- variable 3: 3.14
+* variable 2: value 2
+- variable 3: value 3
 ```
 produces:
 ```json
 {
   "variable 1": "value 1", 
-  "variable 2": 2, 
-  "variable 3": "3.14"
+  "variable 2": "value 2", 
+  "variable 3": "value 3"
 }
 ```
 There is no need to quote strings.
-Note that floats would be stored as strings.
-
 YAMD is forgiving about spaces and line breaks, but you probably want to 
 stick to Markdown conventions regarding indentation.
 
@@ -58,7 +56,7 @@ Example:
  * variable 2: 2
      -       variable   3   :   3.14
 ```
-produces:
+also produces:
 ```json
 {
   "variable 1": "value 1", 
@@ -84,6 +82,54 @@ generates
     "variable 3": "value 3"
 }
 ```
+### assigning numbers
+
+Example:
+```markdown
+- variable 1: 1
+- variable 2: -2
+- variable 3: 3.14159
+- variable 4: 4-2i
+```
+produces:
+```json
+{
+  "variable 1": 1, 
+  "variable 2": -2, 
+  "variable 3": 3.14159,
+  "variable 4": "4-2i"
+}
+```
+Complex numbers are stored as strings
+
+### assingning lists
+
+There are three ways to store lists: horizontal list, vertical list and LOE (List Of Entries)
+
+#### horizontal list
+
+Horizontal lists wraps all items with square brackets, and separated each by commas: `[ item, item, item, ... , item]`. It must be placed at the same line, hence the name horizontal list
+
+Example:
+```markdown
+- variable 1: value 1
+- variable 2: [0, 1, 2, 3.14159]
+- variable 3: ["text 1", 'text 2', 3]
+- variable 4: [text 1, text 2, 3]
+
+```
+generates:
+```
+{
+  "variable 1": "value 1", 
+  "variable 2": [0, 1, 2, 3.14159], 
+  "variable 3": ["text 1", "text 2", 1]
+  "variable 4": "[text 1, text 2, 3]"  
+}
+```
+Note that strings requires either single or double quotes, or else the entire list would be stored
+as one string.
+
 ### Tool
 
 - [pyamd](https://github.com/chmlee/pyamd): YAMD parser and dumper for Python (under active production)
