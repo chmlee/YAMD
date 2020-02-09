@@ -1,3 +1,4 @@
+
 # YAMD
 
 > It reads like Markdown, writes like Markdown, converts like Markdown. Is it Markdown?
@@ -30,30 +31,64 @@ Once the YAMD file is updated, the dataset generated from it would faithfully re
 
 ## Syntax
 
-YAMD syntax is designed to strike a balance between readability and functionality, and
-is modeled after Markdown.
-YAMD files, if written in accordance to Markdown conventions (not necessarily but highly recommended),
+YAMD syntax is designed to strike a balance between readability and functionality, and is
+inspired by Markdown.  YAMD files, if written in accordance to Markdown conventions (not necessarily but highly recommended),
 can be processed as a Markdown file by any file converter.
 
-### assigning strings
+YAMD has two basic structures: `<key-value pair>` and `<dictionary>`. 
+`<key-value pair>` assigns a value to a key in the form of `- <key>: <value>`. 
+`<dictionary>` is a collection of `<key-value pair>`
 
-Variables are assigned in the form of `- <key>: <value>`
+`<key>` is case sensitive, and is always stored as a string. 
+It can contain character, numbers, spaces and symbols except backslash `\`.
+Some examples are:
+
+`key`,
+
+`key_one`,
+
+`keyTwo`,
+
+`a long key name with spaces`,
+
+`1`,
+
+`-2`,
+
+`3.14`,
+
+`^%&*`
+
+### strings
 
 Example:
 ```markdown
-- variable 1: value 1
-- variable 2: value 2
-- variable 3: value 3
+- key 1: value 1
+- key 2: value 2
+- key 3: value 3
 ```
-produces:
+generate
 ```json
 {
-  "variable 1": "value 1", 
-  "variable 2": "value 2", 
-  "variable 3": "value 3"
+  "key 1": "value 1", 
+  "key 2": "value 2", 
+  "key 3": "value 3"
 }
 ```
-There is no need to quote strings.
+There is no need quote strings; quotation marks will be stored as it is:
+```markdown
+- key 1: value 1
+- key 2: 'value 2'
+- key 3: "value 3"
+```
+generates
+```json
+{
+  "key 1": "value 1", 
+  "key 2": "'value 2'", 
+  "key 3": "\"value 3\""
+}
+```
 
 YAMD is forgiving about leading and trailing spaces, but you probably want to stick to Markdown conventions regarding indentation.
 
@@ -72,46 +107,114 @@ produces:
 }
 ```
 
-If no value is assigned to a variable, a default string "NA" would be assigned.
+### numbers
 
 Example:
 ```markdown
-- variable 1: value 1
-- variable 2: 
-- variable 3: value 3
+- key 1: 1
+- key 2: -2
+- key 3: 3.14159
+- key 4: 1.
+- key 5: 1.0
+- key 6: .1
+```
+generates
+```json
+{
+  "key 1": 1, 
+  "key 2": -2, 
+  "key 3": 3.14159, 
+  "key 4": 1.0, 
+  "key 5": 1.0, 
+  "key 6": 0.1
+}
+```
+
+Both integers and floats are accepted. 
+
+To force a number to be stored as a string, wrap it with either single or double quotation marks:
+
+Example:
+```makrdown
+- key 1: 1
+- key 2: '1'
+- key 3: "1"
+- key 4: '1.0'
+- key 5: '1.0 '
+```
+generates
+```json
+{
+  "key 1": 1, 
+  "key 2": "1", 
+  "key 3": "1", 
+  "key 4": "1.0", 
+  "key 5": "'1.0 '"
+}
+```
+
+Compare the results for `key 4` and `key 5`. Note that the string wrapped by quotation marks must be a valid number, 
+or else the entire value would be interpreted as a string and include extra quotation marks. 
+
+Storing numbers as strings may sometimes be a must:
+```markdown
+- key 1: 0012
+- key 2: '0012'
+```
+generates:
+```json
+{
+  "key 1": 12,
+  "key 2": "0012"
+}
+```
+
+### Boolean
+
+Boolean values are `TRUE` and `FALSE`, both capitalized.
+
+```markdown
+- key 1: TRUE
+- key 2: FALSE
+- key 3: true
+- key 4: false
+```
+generates
+```json
+{
+  "key 1": true, 
+  "key 2": false, 
+  "key 3": "true", 
+  "key 4": "false"
+}
+```
+Note that the values must be exact matches, or else they are stored as strings.
+
+### "no response"
+
+To store "no response", either assign `NA` or leave the value blank.
+
+Example:
+```markdown
+- key 1: value 1
+- key 2: 
+- key 3: NA
+- key 4: null
 ```
 generates
 
 ```json
 {
-    "variable 1": "value 1", 
-    "variable 2": "NA", 
-    "variable 3": "value 3"
+  "key 1": "value 1", 
+  "key 2": null, 
+  "key 3": null
+  "key 4": "null"
 }
 ```
-### assigning numbers
 
-Example:
-```markdown
-- variable 1: 1
-- variable 2: -2
-- variable 3: 3.14159
-- variable 4: 4-2i
-```
-generates
-```json
-{
-  "variable 1": 1, 
-  "variable 2": -2, 
-  "variable 3": 3.14159,
-  "variable 4": "4-2i"
-}
-```
-Complex numbers are stored as strings
+### lists
 
-### assigning lists
-
-There are three types to store lists: horizontal list, vertical list and List of Entries (LOE).
+There are three types of lists: horizontal list, vertical list and List of Entries (LOE).
 The first two types store list of strings and/or numbers, and the thrid stores list of dictionaries.
 
 #### horizontal list
@@ -139,7 +242,7 @@ as one string.
 
 #### vertical list
 
-Items of a vertical list is assigned in the form of:
+Items of a vertical list are assigned in the form of:
 ```
 - <key>:
   * <item>
@@ -338,6 +441,3 @@ generates
 Future plans (no guarantee):
 - yamdit: a fork of [StackEdit](https://stackedit.io/) modified for editing YAMD files.
 - pymad port to R
-
-
-
