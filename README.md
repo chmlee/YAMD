@@ -1,65 +1,64 @@
-
-# YAMD
+# REAM
 
 > It reads like Markdown, writes like Markdown, converts like Markdown. Is it Markdown?
 
-> **Y**AMD **a**in't **M**ark**d**own
+> **RE**AM **a**in't **M**arkdown
 
 ## Introduction
 
-YAMD is a data serialization standard with Markdown-*like* syntax.
+REAM is a data collection tool that encourages documentation for data generating process.
+It includes three components:
 
-Accurate documentation for primary data collection can be hard, especially if it
-involves qualitative sources.
-Unless working on a project with specialized programs available, researchers
-usually start with two basic programs: a spreadsheet application (like Excel) 
-and a word processor (like Word).
-They consult some sources, decide to add new things to the dataset,
-made changes to the spreadsheet, document said changes in the word file, and so on.
+1. a data serialization standard with Markdown-like syntax
+2. a parser/dumper for REAM files written in Python
+3. a CRUD application to create, read, update and delete REAM file content
 
-With YAMD, researchers can focus on the documentation exclusively during the data collection
-stage, and let [available tools](#tool) generates the dataset afterwards.
-This also make checking and updating dataset a lot easier.
-Instead of (1) checking/updating the documentation, and then (2) making sure the spreadsheet correctly
-reflects the decisions of the documentation, researchers now only have to do the former,
-Once the YAMD file is updated, the dataset generated from it would faithfully reflect the changes.
+The remaining of this article introduces the serialization standard.
+For further information on the parser/dumper, see [ream-python](#).
+For further information on the CRUD application, see [ream-edit](#).
 
-## Feature
-- Syntax compatible with Markdown, and can be processed as such
-- Support nested data structure
-- [List of Entries (LOE)](#list-of-entries-loe)
+## Design Principles
 
-## Syntax
+- Readability matters
+- Markdown compatibility, and can be processed as such
+- REAM file is the dataset *and* the documentation
+- One-to-one with JSON
 
-YAMD syntax is designed to strike a balance between readability and functionality, and is
-inspired by Markdown.  YAMD files, if written in accordance to Markdown conventions (not necessarily but highly recommended),
-can be processed as a Markdown file by any file converter.
+## Specifications
+- Case sensitive
+- Indentation insensitive: leading whitespaces, that is, tabs (`0x09`) and/or spaces (`0x20`), are ignored
 
-YAMD has two basic structures: `<key-value pair>` and `<dictionary>`. 
-`<key-value pair>` assigns a value to a key in the form of `- <key>: <value>`. 
-`<dictionary>` is a collection of `<key-value pair>`
+## Basic Structures
 
-`<key>` is case sensitive, and is always stored as a string. 
-It can contain character, numbers, spaces and symbols except backslash `\`.
-Some examples are:
+REAM has three basic structures:
 
-`key`,
+- `<variable>`: `<key>` - `<value>` pair
+- `<entry>`: a collection of `<variable>`
+- `<comment>`
 
-`key_one`,
+`<value>` can be any of the following types:
 
-`keyTwo`,
+- [String](#string)
+- [Number](#number)
+- [Boolean](#boolean)
+- [NA](#na)
+- [Star List](#star-list)
 
-`a long key name with spaces`,
+## Variable
 
-`1`,
+`<variable>` assigns a `<value>` to a `<key>`, in the form of
 
-`-2`,
+```markdown
+- <key>: <value>
+```
 
-`3.14`,
+`<variable>` starts with a dash `-`.
+`<value>` and `<key>` is separated by `:`.
 
-`^%&*`
+`<key>` can't be empty.
+It can consists of upper and lowercase letters (A-Z, a-z), digits (0-9) and spaces (`0x20`), but must not starts or ends with spaces.
 
-### strings
+### String
 
 Example:
 ```markdown
@@ -67,182 +66,106 @@ Example:
 - key 2: value 2
 - key 3: value 3
 ```
-generate
-```json
-{
-  "key 1": "value 1", 
-  "key 2": "value 2", 
-  "key 3": "value 3"
-}
-```
-There is no need quote strings; quotation marks will be stored as it is:
+
+There is no need quote strings; quotation marks will be stored as it is.
+
 ```markdown
 - key 1: value 1
 - key 2: 'value 2'
 - key 3: "value 3"
 ```
-generates
+is equivalent to the following JSON expression:
 ```json
 {
-  "key 1": "value 1", 
-  "key 2": "'value 2'", 
+  "key 1": "value 1",
+  "key 2": "'value 2'",
   "key 3": "\"value 3\""
 }
 ```
 
-YAMD is forgiving about leading and trailing spaces, but you probably want to stick to Markdown conventions regarding indentation.
+REAM is ignores all leading and trailing spaces.
 
-Example:
 ```markdown
-- variable 1:value 1
- - variable 2: value 2
-     -       variable   3   :   value  3
+- key 1:value 1
+ - key 2: value 2
+     -       key 3   :   value 3
+-key 4:value 4
 ```
-produces:
-```json
-{
-  "variable 1": "value 1", 
-  "variable 2": "value 2",
-  "variable   3": "value   3"
-}
-```
-
-### numbers
-
-Example:
+is equivalent to
 ```markdown
-- key 1: 1
-- key 2: -2
-- key 3: 3.14159
-- key 4: 1.
-- key 5: 1.0
-- key 6: .1
-```
-generates
-```json
-{
-  "key 1": 1, 
-  "key 2": -2, 
-  "key 3": 3.14159, 
-  "key 4": 1.0, 
-  "key 5": 1.0, 
-  "key 6": 0.1
-}
+- key 1: value 1
+- key 2: value 2
+- key 3: value 3
+- key 4: value 4
 ```
 
-Both integers and floats are accepted. 
+Nevertheless, you probably want to stick to one Markdown convention regarding indentation and be consistent throughout the file if you wish the file to be markdown-compatible.
 
-To force a number to be stored as a string, wrap it with either single or double quotation marks:
+### Number
 
-Example:
-```makrdown
-- key 1: 1
-- key 2: '1'
-- key 3: "1"
-- key 4: '1.0'
-- key 5: '1.0 '
-```
-generates
-```json
-{
-  "key 1": 1, 
-  "key 2": "1", 
-  "key 3": "1", 
-  "key 4": "1.0", 
-  "key 5": "'1.0 '"
-}
-```
+Numbers are surrounded by question marks (`$`)
 
-Compare the results for `key 4` and `key 5`. Note that the string wrapped by quotation marks must be a valid number, 
-or else the entire value would be interpreted as a string and include extra quotation marks. 
+#### Number Literals
 
-Storing numbers as strings may sometimes be a must:
 ```markdown
-- key 1: 0012
-- key 2: '0012'
+- number 1: $1$
+- number 2: $-2$
+- number 3: $3.1415926$
 ```
-generates:
-```json
-{
-  "key 1": 12,
-  "key 2": "0012"
-}
+
+Underscores can be used as separators to improve readability:
+
+```markdown
+- number 4: $123_456_789$
+- number 5: $1_2345_6789$
+```
+
+#### Scientific Notation
+
+```markdown
+- number 6: 3e8
+- number 7: 6.02E23
+```
+
+#### Latex Number
+
+Latex commands can be used to represent numbers that can't be represent by finite number literals.
+
+```markdown
+- number 6: $\frac{1}{3}$
+- number 6: $1/3$
+- number 7: $\pi$
 ```
 
 ### Boolean
 
-Boolean values are `TRUE` and `FALSE`, both capitalized.
+Boolean values are \`TRUE\` and \`FALSE\`, both uppercase and surrounded by backquotes.
 
 ```markdown
-- key 1: TRUE
-- key 2: FALSE
-- key 3: true
-- key 4: false
+- bool 1: `TRUE`
+- bool 2: `FALSE`
+- not bool 1: TRUE
+- not bool 2: `True`
 ```
-generates
-```json
-{
-  "key 1": true, 
-  "key 2": false, 
-  "key 3": "true", 
-  "key 4": "false"
-}
-```
-Note that the values must be exact matches, or else they are stored as strings.
 
-### "no response"
+Note that the boolean values must be exact matches, or else they are stored as strings.
 
-To store "no response", either assign `NA` or leave the value blank.
+### NA
 
-Example:
+Assign `NA` to store "no response"
+
 ```markdown
-- key 1: value 1
-- key 2: 
-- key 3: NA
-- key 4: null
-```
-generates
-
-```json
-{
-  "key 1": "value 1", 
-  "key 2": null, 
-  "key 3": null
-  "key 4": "null"
-}
+- valid na: `NA`
+- invalid na 1: NA
+- invalid na 2: `Na`
 ```
 
-### lists
+Again, if the value is not an exact matches to \`NA\`, it is stored as a string.
 
-There are three types of lists: horizontal list, vertical list and List of Entries (LOE).
-The first two types store list of strings and/or numbers, and the thrid stores list of dictionaries.
+### Star List
 
-#### horizontal list
+Star lists are a sequence of strings, numbers, boolean and/or NA, in the form of:
 
-Items of a horizontal list is assigned in the form of
-`- <key>: [ <item>, <item>, ... , <item> ]`
-
-Example:
-```markdown
-- list 1: [1, 2, 3.14159]
-- list 2: ["text 1", 'text 2', "text 3"]
-- not a list: [text a, text b, text c]
-
-```
-generates
-```
-{
-  "list 1": [1, 2, 3.14159], 
-  "list 2": ["text 1", "text 2", "text 3"]
-  "not a list": "[text a, text b, text c]"  
-}
-```
-Note that strings requires either single or double quotes, or else the entire list would be stored
-as one string.
-
-#### vertical list
-
-Items of a vertical list are assigned in the form of:
 ```
 - <key>:
   * <item>
@@ -251,193 +174,136 @@ Items of a vertical list are assigned in the form of:
   * <item>
 ```
 
-Example
+Example:
 ```markdown
-- list 1:
-  * 1
-  * 2
-  * 3.14159
-- list 2:
+- list of string:
   * text 1
   * text 2
   * text 3
+- list of numbers:
+  * $1$
+  * $2$
+  * $3.14159$
 - still a list:
 * text a
 * text b
 * text c
 ```
-generates
-```json
-{
-  "list 1": [1, 2, 3.14159], 
-  "list 2": ["text 1", "text 2", "text 3"], 
-  "still a list": ["text a", "text b", "text c"]
-}
-```
-There is no need to quote strings in vertical lists.
-Also, although YAMD ignored leading spaces, it is recommended to stick to the Markdown conventions and indent each item.
 
-#### List of Entries (LOE)
+## Comment
 
-Example:
-```markdown
-# entry
-- variable 1: a
-- variable 2: A
-
-# entry
-- variable 3: b
-- variable 4: B
-```
-generates
-```json
-{
-  "entry": [
-    {
-      "variable 1": "a", 
-      "variable 2": "A"
-    }, 
-    {
-      "variable 3": "b", 
-      "variable 4": "B"
-    }
-  ]
-}
-```
-
-For dictionaries to be stored in the same list, they need to have the same LOE names.
-However, the keys of the dictionaries need not be identical.
-
-LOE can also be nested:
+Comments follow strings, numbers, booleans and NA, in the form of
 
 ```markdown
-# entry
-  - variable 1: value 1
-  ## subentry
-    - variable 2: value a
-    - variable 3: value b
-  ## subentry
-    - variable 4: value c
-    - variable 5: value d
-# entry
-  - variable 1: value 2
-  ## subentry
-    - variable 2: value e
-    - variable 3: value f
-  ## subentry
-    - variable 4: value g
-    - variable 5: value h
+- <key>: <value>
+  > <comment>
 ```
-generates
-```json
-{
-  "entry": [
-    {
-      "variable 1": "value 1", 
-      "subentry": [
-        {
-          "variable 2": "value a", 
-          "variable 3": "value b"
-        }, 
-        {
-          "variable 4": "value c", 
-          "variable 5": "value d"
-        }
-      ]
-    }, 
-    {
-      "variable 1": "value 2", 
-      "subentry": [
-        {
-          "variable 2": "value e", 
-          "variable 3": "value f"
-        }, 
-        {
-          "variable 4": "value g", 
-          "variable 5": "value h"
-        }
-      ]
-    }
-  ]
-}
-```
-The number of leading `#` of the list name determine how it is nested.
-The nesting rule is simple: the lines following the name are together *one* element of the list,
-until the line with LOW with the same or more numbers of `#`
-YAMD supports up to 7 level of LOE.
+for variables, and
 
 ```markdown
-# level 1
-  - variable 1: value 1
-  ## level 2
-    - variable 2: value 2
-    ### level 3
-      - variable 3: value 3
-      #### level 4
-        - variable 4: value 4
-        ##### level 5
-          - variable 5: value 5
-          ###### level 6
-            - variable 6: value 6
-  ## level 2
-    - variable 7: value 7
-    ## level 3
-      - variable 8: value 8
-      ### level 4
-        - variable 9: value 9
-  ## LEVEL 2
-    - variable 10: value 10
+- <key>: <value>
+  * <item>
+    > <comment>
 ```
-generates
-```jsos
+for star list.
+
+Again, all white spaces proceeding the greater-than sign `>` will be ignored, so choose the indentation scheme that suits you the most.
+
+## Entry
+
+Entry is a collection of variables, in the form of
+
+```markdown
+# <entry name>
+- <key 1>: <value 1>
+- <key 2>: <value 2>
+...
+- <key n>: <value n>
+```
+
+For example:
+```markdown
+# Country
+- name: The Kingdom of Belgium
+- capital: Brussels
+- population: $1146000$ 
+- permanent member of UNSC: `false`
+- languages:
+  * Dutch
+    > Official language
+  * French
+    > Official language
+  * German
+    > Official language
+```
+
+Entries can be nested, and the nest level is indicated by the number of pound sign `#` proceeding the entry name.
+
+For example:
+
+```markdown
+# Country
+- name: The Kingdom of Belgium
+- capital: Brussels
+- population: $1146000$ 
+- permanent member of UNSC: `false`
+
+## language
+- name: Dutch
+- official language: `ture`
+- size: $0.6$
+  > source: CIA World Factbook
+
+## language
+- name: French
+- official language: `ture`
+- size: $0.4$
+  > source: CIA World Factbook
+
+## language
+- name: German
+- official language: `ture`
+- size: less than 0.01
+  > source: CIA World Factbook
+```
+
+This is equivalent to the following JSON:
+
+```json
 {
-  "level 1": 
-  {
-    "variable 1": "value 1", 
-    "level 2": [
+  "Country": 
+    [
       {
-        "variable 2": "value 2", 
-        "level 3": 
-        {
-          "variable 3": "value 3", 
-          "level 4": 
-          {
-            "variable 4": "value 4", 
-            "level 5": 
+        "name": "The Kingdom of Belgium", 
+        "capital": "Brussels", 
+        "population": "$1146000$", 
+        "permanent member of UNSC": "`false`", 
+        "language": 
+          [
             {
-              "variable 5": "value 5", 
-              "level 6": 
-              {
-                "variable 6": "value 6"
-              }
+              "name": "Dutch", 
+              "official language": "`ture`", 
+              "size": "$0.6$__COM__source: CIA World Factbook"
+            }, 
+            {
+              "name": "French", 
+              "official language": "`ture`", 
+              "size": "$0.4$__COM__source: CIA World Factbook"
+            }, 
+            {
+              "name": "German", 
+              "official language": "`ture`", 
+              "size": "less than 0.01__COM__source: CIA World Factbook"
             }
-          }
-        }
-      }, 
-      {
-        "variable 7": "value 7"
+          ]
       }
-    ], 
-    "level 3": 
-    {
-      "variable 8": "value 8", 
-      "level 4": 
-      {
-        "variable 9": "value 9"
-      }
-    }, 
-    "LEVEL 2": 
-    {
-      "variable 10": "value 10"
-    }
-  }
+    ]
 }
 ```
 
-## Tool
-
-- [pyamd](https://github.com/chmlee/pyamd): YAMD parser and dumper for Python (under active production)
-
-Future plans (no guarantee):
-- yamdit: a fork of [StackEdit](https://stackedit.io/) modified for editing YAMD files.
-- pymad port to R
+REAM is **not** a Markdown flavor.
+By design, REAM file should be able to be processed as a Markdown file by most
+mainstream file converter, but only a subset of Markdown syntax is supported by
+REAM.
+REAM is, after all, a data serialization standard, and should be only used for
+such purpose.
