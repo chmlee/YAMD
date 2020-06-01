@@ -6,35 +6,39 @@
 
 ## Introduction
 
-REAM is a data collection tool that encourages documentation for data generating process.
+REAM is a data collection tool that encourages documentating data generating process.
 It includes three components:
 
-1. a data serialization standard with Markdown-like syntax
-2. a parser/dumper for REAM files written in Python
-3. a CRUD application to create, read, update and delete REAM file content
+1. [ream-lang](https://www.github.com/chmlee/ream-lang):
+a data serialization standard with Markdown-like syntax
+
+2. [ream-python](https://www.github.com/chmlee/ream-python):
+a parser and emitter for REAM files written in Python
+
+3. ream-editor:
+a GUI application to edit REAM file (development in process)
+
 
 The remaining of this article introduces the serialization standard.
-For further information on the parser/dumper, see [ream-python](#).
-For further information on the CRUD application, see [ream-edit](#).
 
 ## Design Principles
 
 - Readability matters
 - Markdown compatibility, and can be processed as such
-- REAM file is the dataset *and* the documentation
-- One-to-one with JSON
+- serves as the dataset and the documentation
+
+![ream diagram](./diagram.png)
 
 ## Specifications
 - Case sensitive
-- Indentation insensitive: leading whitespaces, that is, tabs (`0x09`) and/or spaces (`0x20`), are ignored
+- Indentation insensitive: leading and trailing whitespaces, that is, tabs (`0x09`) and spaces (`0x20`), are ignored
 
 ## Basic Structures
 
-REAM has three basic structures:
+REAM has two basic structures:
 
 - `<variable>`: `<key>` - `<value>` pair
 - `<entry>`: a collection of `<variable>`
-- `<comment>`
 
 `<value>` can be any of the following types:
 
@@ -53,10 +57,10 @@ REAM has three basic structures:
 ```
 
 `<variable>` starts with a dash `-`.
-`<value>` and `<key>` is separated by `:`.
+`<value>` and `<key>` are separated by `:`.
 
 `<key>` can't be empty.
-It can consists of upper and lowercase letters (A-Z, a-z), digits (0-9) and spaces (`0x20`), but must not starts or ends with spaces.
+It can consists of upper and lowercase letters (A-Z, a-z), digits (0-9) and spaces (`0x20`).
 
 ### String
 
@@ -74,7 +78,7 @@ There is no need quote strings; quotation marks will be stored as it is.
 - key 2: 'value 2'
 - key 3: "value 3"
 ```
-is equivalent to the following JSON expression:
+translates to the following JSON expression:
 ```json
 {
   "key 1": "value 1",
@@ -83,7 +87,8 @@ is equivalent to the following JSON expression:
 }
 ```
 
-REAM is ignores all leading and trailing spaces.
+Recall that REAM ignores all leading and trailing spaces.
+So
 
 ```markdown
 - key 1:value 1
@@ -99,7 +104,7 @@ is equivalent to
 - key 4: value 4
 ```
 
-Nevertheless, you probably want to stick to one Markdown convention regarding indentation and be consistent throughout the file if you wish the file to be markdown-compatible.
+Nevertheless, it is recommended to stick to one Markdown flavor regarding indentation and be consistent throughout the file so as to be markdown-compatible.
 
 ### Number
 
@@ -123,11 +128,13 @@ Underscores can be used as separators to improve readability:
 #### Scientific Notation
 
 ```markdown
-- number 6: 3e8
-- number 7: 6.02E23
+- number 6: $3e8$
+- number 7: $6.02E23$
 ```
 
 #### Latex Number
+
+(experimental)
 
 Latex commands can be used to represent numbers that can't be represent by finite number literals.
 
@@ -152,7 +159,7 @@ Note that the boolean values must be exact matches, or else they are stored as s
 
 ### NA
 
-Assign `NA` to store "no response"
+Assign \`NA\` to store "no response"
 
 ```markdown
 - valid na: `NA`
@@ -160,7 +167,7 @@ Assign `NA` to store "no response"
 - invalid na 2: `Na`
 ```
 
-Again, if the value is not an exact matches to \`NA\`, it is stored as a string.
+Again, if the value is not an exact match to \`NA\`, it is stored as a string.
 
 ### Star List
 
@@ -221,13 +228,15 @@ Entry is a collection of variables, in the form of
 - <key n>: <value n>
 ```
 
+Entries must have unique variables.
+
 For example:
 ```markdown
 # Country
 - name: The Kingdom of Belgium
 - capital: Brussels
-- population: $1146000$ 
-- permanent member of UNSC: `false`
+- population: $11_433_256$
+- permanent member of UNSC: `FALSE`
 - languages:
   * Dutch
     > Official language
@@ -235,6 +244,26 @@ For example:
     > Official language
   * German
     > Official language
+```
+
+This corresponds to the following JSON:
+
+```json
+{
+    "Country": [
+        {
+            "name": "The Kingdom of Belgium",
+            "capital": "Brussels",
+            "population": "1146000",
+            "permanent member of UNSC": "FALSE",
+            "languages": [
+                "Dutch__COM__Official language",
+                "French__COM__Official language",
+                "German__COM__Official language"
+            ]
+        }
+    ]
+}
 ```
 
 Entries can be nested, and the nest level is indicated by the number of pound sign `#` proceeding the entry name.
@@ -245,24 +274,24 @@ For example:
 # Country
 - name: The Kingdom of Belgium
 - capital: Brussels
-- population: $1146000$ 
-- permanent member of UNSC: `false`
+- population: $11_433_256$
+- permanent member of UNSC: `FALSE`
 
 ## language
 - name: Dutch
-- official language: `ture`
+- official language: `TRUE`
 - size: $0.6$
   > source: CIA World Factbook
 
 ## language
 - name: French
-- official language: `ture`
+- official language: `TRUE`
 - size: $0.4$
   > source: CIA World Factbook
 
 ## language
 - name: German
-- official language: `ture`
+- official language: `TRUE`
 - size: less than 0.01
   > source: CIA World Factbook
 ```
@@ -271,39 +300,160 @@ This is equivalent to the following JSON:
 
 ```json
 {
-  "Country": 
-    [
-      {
-        "name": "The Kingdom of Belgium", 
-        "capital": "Brussels", 
-        "population": "$1146000$", 
-        "permanent member of UNSC": "`false`", 
-        "language": 
-          [
-            {
-              "name": "Dutch", 
-              "official language": "`ture`", 
-              "size": "$0.6$__COM__source: CIA World Factbook"
-            }, 
-            {
-              "name": "French", 
-              "official language": "`ture`", 
-              "size": "$0.4$__COM__source: CIA World Factbook"
-            }, 
-            {
-              "name": "German", 
-              "official language": "`ture`", 
-              "size": "less than 0.01__COM__source: CIA World Factbook"
-            }
-          ]
-      }
+    "Country": [
+        {
+            "name": "The Kingdom of Belgium",
+            "capital": "Brussels",
+            "population": "1146000",
+            "permanent member of UNSC": "FALSE",
+            "language": [
+                {
+                    "name": "Dutch",
+                    "official language": "TRUE",
+                    "size": "0.6__COM__source: CIA World Factbook"
+                },
+                {
+                    "name": "French",
+                    "official language": "TRUE",
+                    "size": "0.4__COM__source: CIA World Factbook"
+                },
+                {
+                    "name": "German",
+                    "official language": "TRUE",
+                    "size": "less than 0.01__COM__source: CIA World Factbook"
+                }
+            ]
+        }
     ]
 }
 ```
 
-REAM is **not** a Markdown flavor.
-By design, REAM file should be able to be processed as a Markdown file by most
-mainstream file converter, but only a subset of Markdown syntax is supported by
-REAM.
-REAM is, after all, a data serialization standard, and should be only used for
-such purpose.
+REAM supports up to 6 nest levels.
+
+```markdown
+# Country
+- name: The Kingdom of Belgium
+- code: BE
+
+## Region
+- name: Brussels-Capital Region
+- code: BRU
+
+## Region
+- name: Flemish Region
+- code: VLG
+
+### Province
+- name: Antwerpen
+- code: VAN
+
+### Province
+- name: Limburg
+- code: VLI
+
+### Province
+- name: Oost-Vlaanderen
+- code: VOV
+
+### Province
+- name: Vlaams-Brabant
+- code: VBR
+
+### Province
+- name: West-Vlaanderen
+- code: VWV
+
+## Region
+- name: Walloon Region
+- code: WAL
+
+### Province
+- name: Brabant wallon
+- code: WBR
+
+### Province
+- name: Hainaut
+- code: WHT
+
+### Province
+- name: Liège
+- code: WLG
+
+### Province
+- name: Luxembourg
+- code: WLX
+
+### Province
+- name: Namur
+- code: WNA
+```
+maps to the following JSON:
+
+```json
+{
+    "Country": [
+        {
+            "name": "The Kingdom of Belgium",
+            "code": "BE",
+            "Region": [
+                {
+                    "name": "Brussels-Capital Region",
+                    "code": "BRU"
+                },
+                {
+                    "name": "Flemish Region",
+                    "code": "VLG",
+                    "Province": [
+                        {
+                            "name": "Antwerpen",
+                            "code": "VAN"
+                        },
+                        {
+                            "name": "Limburg",
+                            "code": "VLI"
+                        },
+                        {
+                            "name": "Oost-Vlaanderen",
+                            "code": "VOV"
+                        },
+                        {
+                            "name": "Vlaams-Brabant",
+                            "code": "VBR"
+                        },
+                        {
+                            "name": "West-Vlaanderen",
+                            "code": "VWV"
+                        }
+                    ]
+                },
+                {
+                    "name": "Walloon Region",
+                    "code": "WAL",
+                    "Province": [
+                        {
+                            "name": "Brabant wallon ",
+                            "code": "WBR"
+                        },
+                        {
+                            "name": "Hainaut ",
+                            "code": "WHT"
+                        },
+                        {
+                            "name": "Li\u00e8ge",
+                            "code": "WLG"
+                        },
+                        {
+                            "name": "Luxembourg",
+                            "code": "WLX"
+                        },
+                        {
+                            "name": "Namur ",
+                            "code": "WNA"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
