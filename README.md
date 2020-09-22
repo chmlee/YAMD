@@ -2,7 +2,7 @@
 
 > It reads like Markdown, writes like Markdown, converts like Markdown. Is it Markdown?
 
-> **RE**AM **a**in't **M**arkdown
+> **RE**AM **A**in't **M**arkdown
 
 ## Introduction
 
