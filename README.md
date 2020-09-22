@@ -27,7 +27,7 @@ The remaining of this article introduces the serialization standard.
 - Markdown compatibility, and can be processed as such
 - serves as the dataset and the documentation
 
-![ream diagram](./diagram.png)
+![ream diagram](./diagram.svg)
 
 ## Specifications
 - Case sensitive
