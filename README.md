@@ -1,5 +1,7 @@
 # REAM
 
+**This is an old version of REAM. See [the new documentation](https://ream-lang.org) for updates.**
+
 > It reads like Markdown, writes like Markdown, converts like Markdown. Is it Markdown?
 
 > **RE**AM **A**in't **M**arkdown
